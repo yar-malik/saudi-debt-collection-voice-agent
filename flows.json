@@ -1,0 +1,287 @@
+{
+  "industry": "debt collection",
+  "slug": "debt-collection",
+  "greeting": {
+    "ar": "السلام عليكم، معك ليلى من قسم المتابعة المالية. معك دقيقة نتكلم؟",
+    "en": "Hello, this is Layla from the payments follow-up team. Do you have a minute?"
+  },
+  "flows": [
+    {
+      "id": "arrange",
+      "name": "Payment arrangement",
+      "promise": "A payment plan the customer can actually keep, agreed on the call and within your rules.",
+      "kind": "call",
+      "beats": [
+        {
+          "at": 0.2,
+          "kind": "msg",
+          "who": "AGENT",
+          "ar": "معك فوهو بخصوص رصيد متأخر. نقدر نرتب خطة سداد مريحة؟",
+          "en": "This is about an overdue balance. Can we arrange a comfortable plan?"
+        },
+        {
+          "at": 3.6,
+          "kind": "msg",
+          "who": "CALLER",
+          "ar": "أقدر أدفع ألف بالشهر بس.",
+          "en": "I can only manage a thousand a month."
+        },
+        {
+          "at": 5.4,
+          "kind": "tool",
+          "name": "evaluate_plan",
+          "args": "{ \"balance_sar\": 6000, \"offer_sar\": 1000, \"months\": 6 }",
+          "result": "{ \"within_policy\": true, \"requires_approval\": false }"
+        },
+        {
+          "at": 7.6,
+          "kind": "tool",
+          "name": "create_arrangement",
+          "args": "{ \"monthly_sar\": 1000, \"months\": 6 }",
+          "result": "{ \"plan_id\": \"PLN-4410\", \"first_due\": \"next month\" }"
+        }
+      ],
+      "outcome": [
+        [
+          "Plan",
+          "PLN-4410"
+        ],
+        [
+          "Within policy",
+          "Checked live"
+        ],
+        [
+          "Tone",
+          "Compliant, respectful"
+        ]
+      ]
+    },
+    {
+      "id": "promise",
+      "name": "Promise-to-pay follow-up",
+      "promise": "Every broken promise followed up, none forgotten.",
+      "kind": "call",
+      "beats": [
+        {
+          "at": 0.2,
+          "kind": "tool",
+          "name": "promise_missed",
+          "args": "{ \"plan\": \"PLN-4410\", \"days_late\": 3 }",
+          "result": "{ \"attempt\": 1, \"channel\": \"voice\" }"
+        },
+        {
+          "at": 2,
+          "kind": "msg",
+          "who": "AGENT",
+          "ar": "الدفعة المتفق عليها ما وصلت. نأجلها أسبوع ولا نقسمها؟",
+          "en": "The agreed payment hasn't arrived. Shall we delay a week, or split it?"
+        },
+        {
+          "at": 5.4,
+          "kind": "msg",
+          "who": "CALLER",
+          "ar": "قسمها على دفعتين.",
+          "en": "Split it into two."
+        },
+        {
+          "at": 6.8,
+          "kind": "tool",
+          "name": "amend_plan",
+          "args": "{ \"split\": 2, \"within_policy\": true }",
+          "result": "{ \"amended\": true, \"cure_rate_flag\": \"recovered\" }"
+        }
+      ],
+      "outcome": [
+        [
+          "Outcome",
+          "Plan recovered"
+        ],
+        [
+          "Follow-ups",
+          "Never missed"
+        ],
+        [
+          "Escalation",
+          "Avoided"
+        ]
+      ]
+    },
+    {
+      "id": "verify",
+      "name": "Compliant verification",
+      "promise": "Identity confirmed before a single balance detail is spoken.",
+      "kind": "call",
+      "beats": [
+        {
+          "at": 0.2,
+          "kind": "msg",
+          "who": "AGENT",
+          "ar": "قبل ما نتكلم بالتفاصيل، أحتاج أتحقق من هويتك.",
+          "en": "Before we discuss any details, I need to verify your identity."
+        },
+        {
+          "at": 3,
+          "kind": "tool",
+          "name": "verify_identity",
+          "args": "{ \"factors\": [\"dob\", \"national_id_last4\"] }",
+          "result": "{ \"verified\": true, \"disclosure_permitted\": true }"
+        },
+        {
+          "at": 5.2,
+          "kind": "msg",
+          "who": "AGENT",
+          "ar": "تم التحقق، شكراً. نقدر نكمل الحين.",
+          "en": "Verified, thank you. We can continue now."
+        },
+        {
+          "at": 7.4,
+          "kind": "tool",
+          "name": "log_disclosure",
+          "args": "{ \"call_id\": \"CL-9912\", \"consent\": \"captured\" }",
+          "result": "{ \"audit_written\": true }"
+        }
+      ],
+      "outcome": [
+        [
+          "Verification",
+          "Before disclosure"
+        ],
+        [
+          "Audit",
+          "Written per call"
+        ],
+        [
+          "Risk of telling the wrong person",
+          "Removed"
+        ]
+      ]
+    },
+    {
+      "id": "proof",
+      "kind": "document",
+      "name": "Proof of payment capture",
+      "promise": "A customer’s transfer screenshot matched to their account while they are still on the phone.",
+      "docName": "Transfer receipt",
+      "docKind": "Phone screenshot",
+      "hard": "A banking-app screenshot cropped mid-screen, an Arabic-Indic amount, and a reference number that does not match our format.",
+      "page": {
+        "title": "Transfer receipt",
+        "titleAr": "إشعار تحويل",
+        "subtitle": "Banking app screenshot, cropped",
+        "rows": 4,
+        "photo": true
+      },
+      "fields": [
+        {
+          "label": "amount_sar",
+          "value": "1000.00",
+          "confidence": 0.96,
+          "note": "Read from ١٬٠٠٠٫٠٠",
+          "box": {
+            "x": 6,
+            "y": 26,
+            "w": 60,
+            "h": 10
+          }
+        },
+        {
+          "label": "transfer_date",
+          "value": "2026-08-20",
+          "confidence": 0.94,
+          "box": {
+            "x": 6,
+            "y": 40,
+            "w": 50,
+            "h": 8
+          }
+        },
+        {
+          "label": "sender_last4",
+          "value": "4471",
+          "confidence": 0.9,
+          "box": {
+            "x": 6,
+            "y": 52,
+            "w": 44,
+            "h": 8
+          }
+        },
+        {
+          "label": "reference",
+          "value": "FT26082012",
+          "confidence": 0.72,
+          "note": "Bank format, not ours — matched by amount and date",
+          "box": {
+            "x": 6,
+            "y": 64,
+            "w": 70,
+            "h": 8
+          }
+        }
+      ],
+      "outcome": [
+        [
+          "Payment",
+          "Reconciled live"
+        ],
+        [
+          "Dispute risk",
+          "Removed"
+        ],
+        [
+          "Callback",
+          "Not needed"
+        ]
+      ]
+    },
+    {
+      "id": "ladder",
+      "kind": "workflow",
+      "name": "Escalation ladder",
+      "promise": "Every account chased in the right order and within the rules, without a spreadsheet.",
+      "trigger": "A payment arrangement is missed for the second time",
+      "reading": "PLN-4410 · 2 missed · 11 days past due",
+      "steps": [
+        {
+          "t": "Check hardship flags",
+          "d": "None recorded — standard path applies",
+          "system": "Account record"
+        },
+        {
+          "t": "Confirm contact limits",
+          "d": "2 of 3 permitted attempts used this week",
+          "system": "Policy engine"
+        },
+        {
+          "t": "Select the next step",
+          "d": "Voice attempt, not letter — policy ordered",
+          "system": "Policy engine"
+        },
+        {
+          "t": "Attempt within window",
+          "d": "Called inside permitted hours only",
+          "system": "Phone"
+        },
+        {
+          "t": "Record the outcome",
+          "d": "Audit trail written per attempt",
+          "system": "Audit log"
+        }
+      ],
+      "outcome": [
+        [
+          "Calling more than allowed",
+          "Never"
+        ],
+        [
+          "Audit",
+          "Written per attempt"
+        ],
+        [
+          "Rules",
+          "Followed every time"
+        ]
+      ]
+    }
+  ]
+}
